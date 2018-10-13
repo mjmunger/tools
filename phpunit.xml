@@ -1,0 +1,47 @@
+<phpunit
+   backupGlobals="false"
+   backupStaticAttributes="false"
+   bootstrap="bootstrap/bootstrap.php"
+   cacheTokens="false"
+   colors="true"
+   convertErrorsToExceptions="true"
+   convertNoticesToExceptions="true"
+   convertWarningsToExceptions="true"
+   extensionsDirectory="tools/phpunit.d/"
+   forceCoversAnnotation="false"
+   processIsolation="false"
+   stopOnError="true"
+   stopOnFailure="true"
+   stopOnIncomplete="false"
+   stopOnRisky="false"
+   stopOnSkipped="false"
+   timeoutForLargeTests="60"
+   timeoutForMediumTests="10"
+   timeoutForSmallTests="1"
+   verbose="true"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/6.0/phpunit.xsd">
+    <testsuites>
+       <testsuite name="all">
+          <directory suffix="Test.php">tests/unit</directory>
+       </testsuite>
+       <testsuite name="DBAbstractor">
+          <directory suffix="Test.php">tests/unit/DBAbstractor</directory>
+       </testsuite>
+    </testsuites>
+   <logging>
+      <log target="./build/logs/coverage" type="coverage-html"/>
+      <log target="coverage.xml" type="coverage-clover"/>
+   </logging>
+   <filter>
+      <whitelist processUncoveredFilesFromWhitelist="true">
+         <directory suffix=".php">./src/</directory>
+      </whitelist>
+   </filter>
+   <php>
+      <var name="DB_DSN" value="mysql:dbname=utildb;host=localhost" />
+      <var name="DB_USER" value="utiltester" />
+      <var name="DB_PASSWD" value="5AomV7ksqXMkHjvR" />
+      <var name="DB_DBNAME" value="utildb" />
+   </php>
+</phpunit>

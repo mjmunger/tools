@@ -189,7 +189,7 @@ class DBAbstractorTest extends TestCase
      * @dataProvider providerTestClassGeneration
      */
 
-/*    public function testClassGeneration($expectedFileArray) {
+    public function testClassGeneration($expectedFileArray) {
 
         $table = 'employees';
 
@@ -199,12 +199,12 @@ class DBAbstractorTest extends TestCase
         $body = $Abstractor->getBody();
 
         for($line = 0; $line < count($expectedFileArray); $line++ ) {
-            $this->assertSame($expectedFileArray[$line], $body[$x]);
+            $this->assertSame($expectedFileArray[$line], $body[$line]);
         }
     }
 
     public function providerTestClassGeneration() {
         $expectedFileArray = file('tests/unit/DBAbstractor/fixtures/expected/ExpectedEmployeesClass.php');
         return  [ [$expectedFileArray ] ];
-    }*/
+    }
 }

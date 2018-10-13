@@ -111,4 +111,10 @@ class Abstractor
         $format = '    /* </generated_%s> */';
         return sprintf($format, $this->hash);
     }
+
+    public function getBody() {
+        $body = [];
+
+        return $body;
+    }
 }

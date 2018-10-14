@@ -27,6 +27,7 @@ class Abstractor
     public    $classname         = null;
     public    $longestField      = null;
     public    $fields            = [];
+    public    $body              = null;
 
     /**
      * Abstractor constructor.
@@ -37,6 +38,16 @@ class Abstractor
         $this->container = $container;
         $this->pdo = $container->get("pdo");
         $this->hash = sha1(microtime());
+    }
+
+    public function setup($table, $classname, $namespace) {
+        $this->setNamespace($namespace);
+        $this->setTable($table);
+        $this->setClassName($classname);
+        $this->getPrimaryKey();
+        $this->getOnUpdateTimestamps();
+        $this->getTimestamps();
+        $this->discoverFields();
     }
 
     public function databaseError($stmt) {
@@ -89,9 +100,6 @@ class Abstractor
             if($row['Type']  !== 'datetime') continue;
             if($row['Extra'] === 'on update CURRENT_TIMESTAMP') $this->updateTimestamps[] = $row['Field'];
         }
-    }
-    public function abstractTable($table) {
-        $sql = "";
     }
 
     public function setNamespace($namespace) {
@@ -322,6 +330,15 @@ class Abstractor
         $body = $this->writeUpdate($body);
         $body = $this->writeClosing($body);
 
+        $this->body = implode(PHP_EOL,$body);
         return $body;
+    }
+
+    public function saveFile($path) {
+        $fh = fopen($path, 'w');
+        fwrite($fh, $this->body);
+        fclose($fh);
+
+        return (file_exists($path));
     }
 }

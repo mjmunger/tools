@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
 use \PDO;
 use \PDOStatement;
 
+
 class DBAbstractorTest extends TestCase
 {
     use TestCaseTrait;
@@ -184,6 +185,23 @@ class DBAbstractorTest extends TestCase
         $this->assertSame(1,preg_match($closingPattern, $Abstractor->getClosingMarker()));
     }
 
+    public function testSetup() {
+        $Abstractor = new Abstractor($this->getContainer());
+        $table = 'employees';
+        $classname = 'ExpectedEmployeesClass';
+        $namespace = 'Test\Employee';
+
+        $Abstractor->setup($table, $classname, $namespace);
+
+        $this->assertSame($table, $Abstractor->targetTable);
+        $this->assertSame($classname, $Abstractor->classname);
+        $this->assertSame($namespace, $Abstractor->namespace);
+        $this->assertCount(0, array_diff($Abstractor->timestamps,['last_updated', 'date_created']));
+        $this->assertSame('emp_id', $Abstractor->primaryKey);
+        $this->assertCount(0, array_diff($Abstractor->updateTimestamps, ['last_updated']));
+        $this->assertCount(0, array_diff($Abstractor->fields, [ "emp_id", "birth_date", "first_name", "last_name", "gender", "hire_date", "last_updated", "date_created" ]));
+
+    }
     /**
      * @param $expectedFileArray
      * @dataProvider providerTestClassGeneration
@@ -198,14 +216,7 @@ class DBAbstractorTest extends TestCase
         $foundClosingMarker = false;
 
         $Abstractor = new Abstractor($this->getContainer());
-        $Abstractor->setNamespace('Test\Employee');
-        $Abstractor->setTable($table);
-        $Abstractor->abstractTable($table);
-        $Abstractor->setClassName("ExpectedEmployeesClass");
-        $Abstractor->getPrimaryKey();
-        $Abstractor->getOnUpdateTimestamps();
-        $Abstractor->getTimestamps();
-        $Abstractor->discoverFields();
+        $Abstractor->setup('employees', 'ExpectedEmployeesClass', 'Test\Employee');
 
         $body = $Abstractor->getBody();
 
@@ -295,5 +306,29 @@ class DBAbstractorTest extends TestCase
         $this->assertSame('last_updated', $Abstractor->longestField);
         $this->assertSame(13, $Abstractor->fieldPaddingLength());
 
+    }
+
+    /**
+     * @param $destinationPath
+     * @dataProvider providerTestSaveFile
+     */
+
+    public function testSaveFile($destinationPath) {
+        $targetPath = "$destinationPath/ExpectedEmployeesClass.php";
+        if( file_exists($targetPath) ) unlink($targetPath);
+
+        $this->assertFileNotExists($targetPath);
+
+        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor->setup('employees', 'ExpectedEmployeesClass', 'Test\Employee');
+        $body = $Abstractor->getBody();
+        $Abstractor->saveFile($targetPath);
+
+        $this->assertFileExists($targetPath);
+
+    }
+
+    public function providerTestSaveFile() {
+        return  [ ['/tmp/']];
     }
 }

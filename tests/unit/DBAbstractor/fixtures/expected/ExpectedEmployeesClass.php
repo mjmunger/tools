@@ -10,6 +10,7 @@ namespace Test\Employee;
 
 class ExpectedEmployeesClass
 {
+
     /* <generated_2346ad27d7568ba9896f1b7da6b5991251debdf2> */
 
     /* <database fields> */
@@ -43,9 +44,8 @@ class ExpectedEmployeesClass
     }
 
     public function insert() {
-        $sql = " INSERT INTO `utildb`.`employees`
-                ( `emp_id`
-                , `birth_date`
+        $sql = " INSERT INTO `employees`
+                (  `birth_date`
                 , `first_name`
                 , `last_name`
                 , `gender`
@@ -54,8 +54,7 @@ class ExpectedEmployeesClass
                 , `date_created`
                 )
                 VALUES
-                ( :emp_id
-                , :birth_date
+                ( :birth_date
                 , :first_name
                 , :last_name
                 , :gender
@@ -74,14 +73,14 @@ class ExpectedEmployeesClass
     }
 
     public function update() {
-        $sql = "UPDATE `utildb`.`employees`
+        $sql = "UPDATE `employees`
                 SET
                 `birth_date` = :birth_date,
                 `first_name` = :first_name,
                 `last_name` = :last_name,
                 `gender` = :gender,
                 `hire_date` = :hire_date,
-                WHERE `emp_no` = :emp_no
+                WHERE `emp_id` = :emp_id
                 LIMIT 1";
 
         $values = $this->getMyValues();

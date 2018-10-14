@@ -63,7 +63,7 @@ class DBAbstractorTest extends TestCase
     }
 
     /**
-     *
+     * @covers \hphio\tools\Abstractor::getPrimaryKey
      */
 
     public function testGetPrimaryKey() {
@@ -192,19 +192,108 @@ class DBAbstractorTest extends TestCase
     public function testClassGeneration($expectedFileArray) {
 
         $table = 'employees';
+        $openingMarker = '% {4}\/\* <generated_[0-9a-f]{40}> \*/%m';
+        $closingMarker = '% {4}\/\* </generated_[0-9a-f]{40}> \*/%m';
+        $foundOpeningMarker = false;
+        $foundClosingMarker = false;
 
         $Abstractor = new Abstractor($this->getContainer());
-
+        $Abstractor->setNamespace('Test\Employee');
+        $Abstractor->setTable($table);
         $Abstractor->abstractTable($table);
+        $Abstractor->setClassName("ExpectedEmployeesClass");
+        $Abstractor->getPrimaryKey();
+        $Abstractor->getOnUpdateTimestamps();
+        $Abstractor->getTimestamps();
+        $Abstractor->discoverFields();
+
         $body = $Abstractor->getBody();
 
         for($line = 0; $line < count($expectedFileArray); $line++ ) {
-            $this->assertSame($expectedFileArray[$line], $body[$line]);
+            $expectedLine = rtrim($expectedFileArray[$line]);
+
+            //Do this so that it fails and tells me which line needs work.
+            if(isset($body[$line]) === false) array_push($body,'');
+            $message = $this->lineDiff($expectedLine, $body[$line], $line);
+
+            //Can't check opening or closing markers because they have random hashes in them.
+            if(preg_match($openingMarker, $body[$line]) === 1) {
+                $foundOpeningMarker = true;
+                continue;
+            }
+
+            if(preg_match($closingMarker, $body[$line]) === 1) {
+                $foundClosingMarker = true;
+                continue;
+            }
+
+            $this->assertSame($expectedLine, $body[$line], $message);
         }
+
+        $this->assertTrue($foundOpeningMarker);
+        $this->assertTrue($foundClosingMarker);
+
+    }
+
+    private function lineDiff($expected, $actual, $line) {
+        $line++;
+        $expected = str_split($expected);
+        $actual   = str_split($actual);
+
+        for($x = 0; $x < count($expected); $x++ ) {
+            try {
+                if(strcmp($expected[$x], $actual[$x]) === 0 ) continue;
+            } catch (\Exception $e) {
+                echo "Something is wrong with line $line:" . PHP_EOL;
+                printf("Expected (%s): '%s'" , strlen(implode($expected)), implode($expected));
+                printf("Actual (%s): '%s'" , strlen(implode($actual)), implode($actual));
+                echo $e->getMessage() . PHP_EOL;
+                throw $e;
+            }
+            $format = 'Expecting "%s" (ord: %s, hex: %s) at offset %s on line %s. Got "%s" (ord: %s, hex: %s) instead.';
+            return sprintf( $format,
+                $expected[$x],
+                ord($expected[$x]),
+                dechex(ord($expected[$x])),
+                $x,
+                $line,
+                $actual[$x],
+                ord($actual[$x]),
+                dechex(ord($actual[$x]))
+            );
+        }
+        return "$line ok.";
     }
 
     public function providerTestClassGeneration() {
         $expectedFileArray = file('tests/unit/DBAbstractor/fixtures/expected/ExpectedEmployeesClass.php');
         return  [ [$expectedFileArray ] ];
+    }
+
+    public function testDiscoverFields() {
+        $table = 'employees';
+        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor->setTable($table);
+        $Abstractor->discoverFields();
+
+        $expectedFields = [ "emp_id", "birth_date", "first_name", "last_name", "gender", "hire_date", "last_updated", "date_created" ];
+
+        foreach($expectedFields as $field) {
+            $this->assertTrue(in_array($field, $Abstractor->fields));
+        }
+
+        for($x = 0; $x < count($expectedFields); $x++) {
+            $this->assertSame($expectedFields[$x], $Abstractor->fields[$x]);
+        }
+
+        /** Technically, `last_updated` and `date_created` are both the longest.
+         *  However, since `last_updated` should be discovered first, and
+         *  `date_created` is not longer than `last_updated`, the "winner"
+         *  is the longest field encoutered at the earliest time.
+         */
+
+        $this->assertSame('last_updated', $Abstractor->longestField);
+        $this->assertSame(13, $Abstractor->fieldPaddingLength());
+
     }
 }

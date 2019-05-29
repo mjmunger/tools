@@ -11,7 +11,7 @@ namespace hphio\tools;
 
 
 use Exception;
-use hphio\tools\Abstractor;
+use hphio\tools\AbstractorCommand;
 use League\Container\Container;
 use PHPUnit\DbUnit\TestCaseTrait;
 use PHPUnit\Framework\TestCase;
@@ -58,18 +58,18 @@ class DBAbstractorTest extends TestCase
 
     public function testSetTable() {
         $table = 'employees';
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setTable($table);
         $this->assertSame($table, $Abstractor->targetTable);
     }
 
     /**
-     * @covers \hphio\tools\Abstractor::getPrimaryKey
+     * @covers \hphio\tools\AbstractorCommand::getPrimaryKey
      */
 
     public function testGetPrimaryKey() {
         $table = 'employees';
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setTable($table);
 
         $primaryKey = "emp_id";
@@ -80,7 +80,7 @@ class DBAbstractorTest extends TestCase
 
     public function testGetTimestamps() {
         $table = 'employees';
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setTable($table);
         $Abstractor->getTimestamps();
 
@@ -92,7 +92,7 @@ class DBAbstractorTest extends TestCase
 
     public function testGetOnUpdateTimestamps() {
         $table = 'employees';
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setTable($table);
         $Abstractor->getOnUpdateTimestamps();
 
@@ -115,7 +115,7 @@ class DBAbstractorTest extends TestCase
         $stmt->method('errorCode')->willReturn($returnCode);
         $stmt->method('errorInfo')->willReturn([ $driverState, $returnCode, $returnMessage ]);
 
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
 
         if($throwsException) $this->expectException('Exception');
 
@@ -131,7 +131,7 @@ class DBAbstractorTest extends TestCase
     }
 
     public function testPrepareExecute() {
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
 
         $sql = "SELECT SUM(?+?) AS TOTAL";
         $values = [7,3];
@@ -148,7 +148,7 @@ class DBAbstractorTest extends TestCase
     }
 
     public function testSetNamespace() {
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $namespace = 'Test\Namespace';
         $Abstractor->setNamespace($namespace);
         $this->assertSame($namespace, $Abstractor->namespace);
@@ -161,7 +161,7 @@ class DBAbstractorTest extends TestCase
      * @dataProvider providerTestSetClassName
      */
     public function testSetClassName($classname, $expectedClassname, $expectedFilename) {
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setClassName($classname);
         $this->assertSame( $expectedClassname, $Abstractor->classname);
         $this->assertSame( $expectedFilename,  $Abstractor->filename );
@@ -174,7 +174,7 @@ class DBAbstractorTest extends TestCase
     }
 
     public function testHashMarkers() {
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $pattern = '/[0-9a-z]{40}/m';
         $this->assertSame(1, preg_match($pattern, $Abstractor->hash));
 
@@ -186,7 +186,7 @@ class DBAbstractorTest extends TestCase
     }
 
     public function testSetup() {
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $table = 'employees';
         $classname = 'ExpectedEmployeesClass';
         $namespace = 'Test\Employee';
@@ -215,7 +215,7 @@ class DBAbstractorTest extends TestCase
         $foundOpeningMarker = false;
         $foundClosingMarker = false;
 
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setup('employees', 'ExpectedEmployeesClass', 'Test\Employee');
 
         $body = $Abstractor->getBody();
@@ -283,7 +283,7 @@ class DBAbstractorTest extends TestCase
 
     public function testDiscoverFields() {
         $table = 'employees';
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setTable($table);
         $Abstractor->discoverFields();
 
@@ -319,7 +319,7 @@ class DBAbstractorTest extends TestCase
 
         $this->assertFileNotExists($targetPath);
 
-        $Abstractor = new Abstractor($this->getContainer());
+        $Abstractor = new AbstractorCommand($this->getContainer());
         $Abstractor->setup('employees', 'ExpectedEmployeesClass', 'Test\Employee');
         $body = $Abstractor->getBody();
         $Abstractor->saveFile($targetPath);

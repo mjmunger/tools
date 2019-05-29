@@ -11,10 +11,11 @@ namespace hphio\tools;
 
 
 use League\Container\Container;
+use League\Flysystem\FileNotFoundException;
 use \PDO;
 use \PDOStatement;
 
-class Abstractor
+class AbstractorCommand extends CLICommand
 {
 
     protected $pdo               = null;
@@ -28,6 +29,7 @@ class Abstractor
     public    $longestField      = null;
     public    $fields            = [];
     public    $body              = null;
+    public    $command           = 'abstract';
 
     /**
      * Abstractor constructor.
@@ -340,5 +342,31 @@ class Abstractor
         fclose($fh);
 
         return (file_exists($path));
+    }
+
+    public function run($container)
+    {
+        $runner = $container->get('runner');
+        $args = $runner->getCommandArgs();
+
+        if($runner->argc !== 6) return $this->showHelp();
+
+        $filename  = $args[0];
+        $table     = $args[1];
+        $classname = $args[2];
+        $namespace = $args[3];
+
+        $this->setup($table, $classname, $namespace);
+        $this->getBody();
+        $this->saveFile($filename);
+    }
+
+    public function showHelp()
+    {
+?>
+
+COMMAND SYNTAX: ht.phar abstract 'outfile' 'tablename' 'classname' 'namespace'
+
+<?php
     }
 }

@@ -10,7 +10,8 @@ spl_autoload_register(function ($class) {
 
 
     // project-specific namespace prefix
-    $prefix = "hphio\\util\\";
+    $prefix = "hphio\\tools\\";
+
 
     // base directory for the namespace prefix
     $base_dir = __DIR__ . '/src/';
@@ -21,6 +22,8 @@ spl_autoload_register(function ($class) {
         // no, move to the next registered autoloader
         return;
     }
+
+    //echo "Looking for: $class" . PHP_EOL;
 
     // get the relative class name
 
@@ -36,6 +39,8 @@ spl_autoload_register(function ($class) {
     // if the file exists, require it
     if (file_exists($file)) {
         require $file;
+    } else {
+        print "Could not load: $file" . PHP_EOL;
     }
 
 });
